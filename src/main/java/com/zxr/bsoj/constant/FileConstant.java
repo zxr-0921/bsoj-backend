@@ -7,7 +7,11 @@ public interface FileConstant {
 
     /**
      * COS 访问地址
-     * todo 需替换配置
      */
-    String COS_HOST = "";
+    String COS_HOST = "http://8.138.10.224:9121/";
+
+    /**
+     * bucketName
+     */
+    String BUCKET_NAME = "bsoj-image";
 }

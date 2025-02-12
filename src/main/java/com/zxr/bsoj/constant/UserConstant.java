@@ -30,6 +30,8 @@ public interface UserConstant {
      * 被封号
      */
     String BAN_ROLE = "ban";
+    String DEFAULT_PASSWORD = "12345678";
+    String DEFAULT_USERNAME = "MOMO";
 
     // endregion
 }

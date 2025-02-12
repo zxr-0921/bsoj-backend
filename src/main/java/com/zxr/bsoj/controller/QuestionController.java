@@ -21,6 +21,8 @@ import com.zxr.bsoj.model.vo.QuestionVO;
 import com.zxr.bsoj.service.QuestionService;
 import com.zxr.bsoj.service.QuestionSubmitService;
 import com.zxr.bsoj.service.UserService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +37,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/question")
 @Slf4j
+@Api(tags = "题目模块")
 public class QuestionController {
 
     private final static Gson GSON = new Gson();
@@ -55,6 +58,7 @@ public class QuestionController {
      * @return
      */
     @PostMapping("/add")
+    @ApiOperation(value = "创建题目")
     public BaseResponse<Long> addQuestion(@RequestBody QuestionAddRequest questionAddRequest, HttpServletRequest request) {
         if (questionAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -91,6 +95,7 @@ public class QuestionController {
      * @param request
      * @return
      */
+    @ApiOperation(value = "删除题目")
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteQuestion(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
@@ -115,6 +120,7 @@ public class QuestionController {
      * @param questionUpdateRequest
      * @return
      */
+    @ApiOperation(value = "更新题目(管理员)")
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updateQuestion(@RequestBody QuestionUpdateRequest questionUpdateRequest) {
@@ -151,6 +157,7 @@ public class QuestionController {
      * @param id
      * @return
      */
+    @ApiOperation(value = "根据 id 获取题目")
     @GetMapping("/get")
     public BaseResponse<Question> getQuestionById(long id, HttpServletRequest request) {
         if (id <= 0) {
@@ -174,6 +181,7 @@ public class QuestionController {
      * @param id
      * @return
      */
+    @ApiOperation(value = "根据 id 获取题目（脱敏）")
     @GetMapping("/get/vo")
     public BaseResponse<QuestionVO> getQuestionVOById(long id, HttpServletRequest request) {
         if (id <= 0) {
@@ -193,6 +201,7 @@ public class QuestionController {
      * @param request
      * @return
      */
+    @ApiOperation(value = "分页获取题目列表")
     @PostMapping("/list/page/vo")
     public BaseResponse<Page<QuestionVO>> listQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
                                                                HttpServletRequest request) {
@@ -212,6 +221,7 @@ public class QuestionController {
      * @param request
      * @return
      */
+    @ApiOperation(value = "分页获取当前用户创建的题目列表")
     @PostMapping("/my/list/page/vo")
     public BaseResponse<Page<QuestionVO>> listMyQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
                                                                  HttpServletRequest request) {
@@ -236,8 +246,9 @@ public class QuestionController {
      * @param request
      * @return
      */
+    @ApiOperation(value = "分页获取题目列表（仅管理员）")
     @PostMapping("/list/page")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @AuthCheck(mustRole = {UserConstant.ADMIN_ROLE,UserConstant.TEACHER_ROLE})
     public BaseResponse<Page<Question>> listQuestionByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
                                                            HttpServletRequest request) {
         long current = questionQueryRequest.getCurrent();
@@ -247,6 +258,18 @@ public class QuestionController {
         return ResultUtils.success(questionPage);
     }
 
+    /**
+     * 分页获取教师创建的题目列表
+     */
+    @ApiOperation(value = "分页获取教师创建的题目列表")
+    @PostMapping("/list/page/teacher")
+    public BaseResponse<Page<Question>> listQuestionByPageTeacher(@RequestBody QuestionQueryRequest questionQueryRequest, HttpServletRequest request) {
+        long current = questionQueryRequest.getCurrent();
+        long size = questionQueryRequest.getPageSize();
+        Page<Question> questionPage = questionService.page(new Page<>(current, size),
+                questionService.getMyQueryWrapper(questionQueryRequest));
+        return ResultUtils.success(questionPage);
+    }
     // endregion
 
     /**
@@ -256,8 +279,10 @@ public class QuestionController {
      * @param request
      * @return
      */
+    @ApiOperation(value = "编辑题目")
     @PostMapping("/edit")
-    public BaseResponse<Boolean> editQuestion(@RequestBody QuestionEditRequest questionEditRequest, HttpServletRequest request) {
+    public BaseResponse<Boolean> editQuestion(@RequestBody QuestionEditRequest
+                                                      questionEditRequest, HttpServletRequest request) {
         if (questionEditRequest == null || questionEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -271,7 +296,7 @@ public class QuestionController {
         if (judgeCase != null) {
             question.setJudgeCase(GSON.toJson(judgeCase));
         }
-       JudgeConfig judgeConfig = questionEditRequest.getJudgeConfig();
+        JudgeConfig judgeConfig = questionEditRequest.getJudgeConfig();
         if (judgeConfig != null) {
             question.setJudgeConfig(GSON.toJson(judgeConfig));
         }
@@ -297,6 +322,7 @@ public class QuestionController {
      * @param request
      * @return 提交记录的 id
      */
+    @ApiOperation(value = "提交题目")
     @PostMapping("/question_submit/do")
     public BaseResponse<Long> doQuestionSubmit(@RequestBody QuestionSubmitAddRequest questionSubmitAddRequest,
                                                HttpServletRequest request) {
@@ -315,8 +341,10 @@ public class QuestionController {
      * @param request
      * @return
      */
+    @ApiOperation(value = "分页获取题目提交列表")
     @PostMapping("/question_submit/list/page")
-    public BaseResponse<Page<QuestionSubmitVO>> listQuestionSubmitByPage(@RequestBody QuestionSubmitQueryRequest questionSubmitQueryRequest,
+    public BaseResponse<Page<QuestionSubmitVO>> listQuestionSubmitByPage(@RequestBody QuestionSubmitQueryRequest
+                                                                                 questionSubmitQueryRequest,
                                                                          HttpServletRequest request) {
         long current = questionSubmitQueryRequest.getCurrent();
         long size = questionSubmitQueryRequest.getPageSize();

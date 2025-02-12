@@ -2,6 +2,7 @@ package com.zxr.bsoj.service;
 
 
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -48,4 +49,5 @@ public interface QuestionService extends IService<Question> {
      */
     Page<QuestionVO> getQuestionVOPage(Page<Question> questionPage, HttpServletRequest request);
 
+    QueryWrapper<Question> getMyQueryWrapper(QuestionQueryRequest questionQueryRequest);
 }

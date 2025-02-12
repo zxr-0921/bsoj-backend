@@ -111,7 +111,6 @@ create table notification
     endTime    datetime                           null comment '结束时间',
     userId     mediumtext                         not null comment '所属用户',
     status     tinyint  default 0                 not null comment '0: 关闭，1: 启用',
-    domain     varchar(255)                       null comment '域名',
     createTime datetime default CURRENT_TIMESTAMP null comment '创建时间',
     updateTime datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
     isDelete   tinyint  default 0                 not null comment '是否删除'

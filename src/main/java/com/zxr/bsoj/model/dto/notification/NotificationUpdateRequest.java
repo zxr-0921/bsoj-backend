@@ -28,10 +28,7 @@ public class NotificationUpdateRequest implements Serializable {
      * 结束时间
      */
     private Date endTime;
-    /**
-     * 通知类型
-     */
-    private String type;
+
     /**
      * 0: 关闭，1: 启用
      */

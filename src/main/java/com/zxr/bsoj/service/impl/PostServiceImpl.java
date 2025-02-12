@@ -100,7 +100,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         }
         String searchText = postQueryRequest.getSearchText();
         String sortField = postQueryRequest.getSortField();
-        String sortOrder = postQueryRequest.getSortOrder();
+        String sortOrder = postQueryRequest.getOrder();
         Long id = postQueryRequest.getId();
         String title = postQueryRequest.getTitle();
         String content = postQueryRequest.getContent();
@@ -141,7 +141,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         long current = postQueryRequest.getCurrent() - 1;
         long pageSize = postQueryRequest.getPageSize();
         String sortField = postQueryRequest.getSortField();
-        String sortOrder = postQueryRequest.getSortOrder();
+        String sortOrder = postQueryRequest.getOrder();
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         // 过滤
         boolQueryBuilder.filter(QueryBuilders.termQuery("isDelete", 0));

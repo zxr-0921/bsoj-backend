@@ -1,6 +1,7 @@
 package com.zxr.bsoj.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.zxr.bsoj.annotation.AuthCheck;
 import com.zxr.bsoj.common.BaseResponse;
@@ -11,6 +12,7 @@ import com.zxr.bsoj.constant.UserConstant;
 import com.zxr.bsoj.exception.BusinessException;
 import com.zxr.bsoj.exception.ThrowUtils;
 import com.zxr.bsoj.model.dto.notification.NotificationAddRequest;
+import com.zxr.bsoj.model.dto.notification.NotificationQueryRequest;
 import com.zxr.bsoj.model.dto.notification.NotificationUpdateRequest;
 import com.zxr.bsoj.model.entity.Notification;
 import com.zxr.bsoj.model.entity.User;
@@ -122,10 +124,19 @@ public class NotificationController {
     /**
      * 前端获取发布的公告列表
      */
-    @GetMapping("/list")
-    public BaseResponse<List<NotificationVO>> listNotification() {
-        List<Notification> notificationList = notificationService.list(new QueryWrapper<Notification>().eq("status", 1));
+    @PostMapping("/list")
+    public BaseResponse<Page<NotificationVO>> listNotification(@RequestBody NotificationQueryRequest notificationQueryRequest) {
+        // 获取分页
+        long current = notificationQueryRequest.getCurrent();
+        long pageSize = notificationQueryRequest.getPageSize();
+        ThrowUtils.throwIf(pageSize > 20, ErrorCode.PARAMS_ERROR);
+        // 获取所有公告
+        // 获取所有状态为1的公告
+        QueryWrapper<Notification> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("status", 1);
+        Page<Notification> notificationPage = notificationService.page(new Page<>(current, pageSize), queryWrapper);
         // 将Notification实体列表转换为NotificationVO对象列表
+        List<Notification> notificationList = notificationPage.getRecords();
         List<NotificationVO> notificationVOList = notificationList.stream()
                 .map(notification -> {
                     NotificationVO notificationVO = new NotificationVO();
@@ -133,111 +144,53 @@ public class NotificationController {
                     return notificationVO;
                 })
                 .collect(Collectors.toList());
+        // 返回分页对象
+        Page<NotificationVO> notificationVOPage = new Page<>(current, pageSize, notificationPage.getTotal());
+        notificationVOPage.setRecords(notificationVOList);
+        return ResultUtils.success(notificationVOPage);
 
-        return ResultUtils.success(notificationVOList);
     }
 
-
-//    @GetMapping("/get/vo")
-//    public BaseResponse<NotificationVO> getNotificationVOById(HttpServletRequest request) {
-//        if (id <= 0) {
-//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-//        }
-//        Notification notificition = notificationService.getById(id);
-//        if (notificition == null) {
-//            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
-//        }
-//        return ResultUtils.success(notificationService.getNotificationVO(notificition, request));
-//    }
+    /**
+     * 根据id获取通知
+     */
+    @GetMapping("/get")
+    public BaseResponse<Notification> getNotificationById(@RequestParam long id) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Notification notification = notificationService.getById(id);
+        if (notification == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        return ResultUtils.success(notification);
+    }
 
     /**
-     * 分页获取列表（封装类）
-     *
-     * @return
+     * 改变状态
      */
-//    @PostMapping("/list/page/vo")
-//    public BaseResponse<Page<NotificationVO>> listNotificationVOByPage(@RequestBody NotificationQueryRequest
-//                                                                               notificitionQueryRequest,
-//                                                                       HttpServletRequest request) {
-//        long current = notificitionQueryRequest.getCurrent();
-//        long size = notificitionQueryRequest.getPageSize();
-//        // 限制爬虫
-//        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
-//        Page<Notification> notificitionPage = notificationService.page(new Page<>(current, size),
-//                notificationService.getQueryWrapper(notificitionQueryRequest));
-//        return ResultUtils.success(notificationService.getNotificationVOPage(notificitionPage, request));
-//    }
-
-//    @GetMapping("/get/vo")
-//    public BaseResponse<NotificationVO> getNotificationVO(@RequestParam String domain) {
-//        // 1. 校验参数
-//        if (domain.isEmpty()) {
-//            throw new BusinessException(ErrorCode.PARAMS_ERROR, "域名为空");
-//        }
-//        // 2. 查询通知
-//        Notification notification = notificationService.getOne(new QueryWrapper<Notification>().
-//                like("domain", "\"" + domain + "\""));
-//        if (notification == null) {
-//            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "暂时没有通知");
-//        }
-//        // 3. 校验通知是否开启状态
-//        Integer status = notification.getStatus();
-//        // 未开启状态
-//        if (status == 0) {
-//            return ResultUtils.success(null);
-//        }
-//        // 4. 校验是否在开始时间到结束时间内
-//        Date startTime = notification.getStartTime();
-//        Date endTime = notification.getEndTime();
-//        if (startTime == null || endTime == null) {
-//            throw new BusinessException(ErrorCode.PARAMS_ERROR, "开始时间或结束时间为空");
-//        }
-//        // 当前时间
-//        Date date = DateUtil.date();
-//        // 判断当前时间是否在开始时间到结束时间内
-//        if (date.before(startTime) || date.after(endTime)) {
-//            return ResultUtils.success(null);
-//        }
-//        log.info("getNotificationVO: {}", notification);
-//        NotificationVO notificationVO = notificationService.getNotificationVO(notification);
-//        return ResultUtils.success(notificationVO);
-//    }
-
-
-    // endregion
+    @PostMapping("/change/status")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> changeNotificationStatus(@RequestParam long id, @RequestParam int status) {
+        if (id <= 0 || status < 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Notification notification = new Notification();
+        notification.setId(id);
+        notification.setStatus(status);
+        boolean result = notificationService.updateById(notification);
+        return ResultUtils.success(result);
+    }
 
     /**
-     * 编辑（用户）
-     *
-     * @param notificitionEditRequest
-     * @param request
-     * @return
+     * 获取通知列表(管理员)
      */
-//    @PostMapping("/edit")
-//    public BaseResponse<Boolean> editNotification(@RequestBody NotificationEditRequest
-//                                                          notificitionEditRequest, HttpServletRequest request) {
-//        if (notificitionEditRequest == null || notificitionEditRequest.getId() <= 0) {
-//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-//        }
-//        Notification notificition = new Notification();
-//        BeanUtils.copyProperties(notificitionEditRequest, notificition);
-//        List<String> tags = notificitionEditRequest.getTags();
-//        if (tags != null) {
-//            notificition.setTags(GSON.toJson(tags));
-//        }
-//        // 参数校验
-//        notificationService.validNotification(notificition, false);
-//        User loginUser = userService.getLoginUser(request);
-//        long id = notificitionEditRequest.getId();
-//        // 判断是否存在
-//        Notification oldNotification = notificationService.getById(id);
-//        ThrowUtils.throwIf(oldNotification == null, ErrorCode.NOT_FOUND_ERROR);
-//        // 仅本人或管理员可编辑
-//        if (!oldNotification.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
-//            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
-//        }
-//        boolean result = notificationService.updateById(notificition);
-//        return ResultUtils.success(result);
-//    }
-
+    @PostMapping("/list/admin")
+    public BaseResponse<Page<Notification>> listNotificationAdmin(@RequestBody NotificationQueryRequest notificationQueryRequest) {
+        // 获取所有公告
+        long current = notificationQueryRequest.getCurrent();
+        long pageSize = notificationQueryRequest.getPageSize();
+        Page<Notification> notificationPage = notificationService.page(new Page<>(current, pageSize));
+        return ResultUtils.success(notificationPage);
+    }
 }

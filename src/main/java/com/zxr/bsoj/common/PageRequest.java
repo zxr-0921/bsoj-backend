@@ -28,5 +28,5 @@ public class PageRequest {
     /**
      * 排序顺序（默认升序）
      */
-    private String sortOrder = CommonConstant.SORT_ORDER_ASC;
+    private String order = CommonConstant.SORT_ORDER_ASC;
 }
