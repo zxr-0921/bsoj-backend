@@ -25,7 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.zxr.bsoj.constant.UserConstant.*;
+import static com.zxr.bsoj.constant.UserConstant.DEFAULT_USERNAME;
+import static com.zxr.bsoj.constant.UserConstant.USER_LOGIN_STATE;
 
 
 /**
@@ -35,13 +36,15 @@ import static com.zxr.bsoj.constant.UserConstant.*;
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
+    private static final String USER_CODE = "klsjiwegnmfksdjfio";
+
     /**
      * 盐值，混淆密码
      */
     private static final String SALT = "zxr";
 
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword,String role) {
+    public long userRegister(String userAccount, String userPassword, String checkPassword, String userCode) {
         // 1. 校验
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
@@ -71,7 +74,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setUserName(DEFAULT_USERNAME);
             user.setUserAccount(userAccount);
             user.setUserPassword(encryptPassword);
-            user.setUserRole(role);
+
+            //通过userCode判断是否为老师
+            if (userCode.equals(USER_CODE)) {
+                user.setUserRole(UserRoleEnum.TEACHER.getValue());
+            } else {
+                user.setUserRole(UserRoleEnum.STUDENT.getValue());
+            }
             boolean saveResult = this.save(user);
             if (!saveResult) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
@@ -103,6 +112,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user == null) {
             log.info("user login failed, userAccount cannot match userPassword");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
+        }
+        Integer status = user.getStatus();
+        if (status == 1) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户已被禁用");
         }
         // 3. 记录用户的登录态
         request.getSession().setAttribute(USER_LOGIN_STATE, user);

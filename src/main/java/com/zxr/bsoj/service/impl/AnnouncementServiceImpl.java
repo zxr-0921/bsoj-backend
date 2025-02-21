@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateTime;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.zxr.bsoj.constant.AnnouncementConstant;
 import com.zxr.bsoj.constant.CommonConstant;
 import com.zxr.bsoj.mapper.AnnouncementMapper;
 import com.zxr.bsoj.model.dto.announcement.AnnouncementAddRequest;
@@ -21,6 +22,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.zxr.bsoj.constant.AnnouncementConstant.*;
@@ -53,7 +55,13 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
         announcement.setCategory(announcementAddRequest.getCategory());
         announcement.setTitle(announcementAddRequest.getTitle());
         announcement.setContent(announcementAddRequest.getContent());
-        announcement.setStatus(STATUS_DRAFT);
+        String status = announcementAddRequest.getStatus();
+        if (Objects.equals(status, STATUS_PUBLISHED)) {
+            announcement.setStatus(STATUS_PUBLISHED);
+            announcement.setReleaseTime(new DateTime());
+        } else {
+            announcement.setStatus(STATUS_DRAFT);
+        }
         //2. 插入数据库
         User loginUser = userService.getLoginUser(request);
         announcement.setPublisherId(loginUser.getId());
@@ -123,7 +131,7 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
         // 类别
         queryWrapper.eq(StringUtils.isNotBlank(category), "category", category);
         // 状态
-        queryWrapper.eq(StringUtils.isNotBlank(status), "status", category);
+        queryWrapper.eq(StringUtils.isNotBlank(status), "status", status);
         // 标题
         queryWrapper.like(StringUtils.isNotBlank(title), "title", title);
         // 发布人

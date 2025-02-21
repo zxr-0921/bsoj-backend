@@ -16,6 +16,7 @@ import com.zxr.bsoj.model.entity.User;
 import com.zxr.bsoj.model.enums.QuestionSubmitLanguageEnum;
 import com.zxr.bsoj.model.enums.QuestionSubmitStatusEnum;
 import com.zxr.bsoj.model.vo.QuestionSubmitVO;
+import com.zxr.bsoj.model.vo.QuestionVO;
 import com.zxr.bsoj.service.QuestionService;
 import com.zxr.bsoj.service.QuestionSubmitService;
 import com.zxr.bsoj.service.UserService;
@@ -137,7 +138,30 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
     }
 
     @Override
-    public Page<QuestionSubmitVO> getQuestionSubmitVOPage(Page<QuestionSubmit> questionSubmitPage, User loginUser) {
+    public QuestionSubmitVO
+    getQuestionSubmitVO(QuestionSubmit questionSubmit, User loginUser, Boolean isOnce) {
+        QuestionSubmitVO questionSubmitVO = QuestionSubmitVO.objToVo(questionSubmit);
+        // 脱敏：仅本人和管理员能看见自己（提交 userId 和登录用户 id 不同）提交的代码
+        long userId = loginUser.getId();
+        // 处理脱敏
+        if (userId != questionSubmit.getUserId() && !userService.isAdmin(loginUser)) {
+            questionSubmitVO.setCode(null);
+        }
+        if (isOnce) {
+            // 更新题目信息
+            Long questionId = questionSubmit.getQuestionId();
+            QuestionVO questionVO = questionService.getQuestionVO(questionService.getById(questionId), null);
+            questionSubmitVO.setQuestionVO(questionVO);
+            // 更新做题者信息
+            User user = userService.getById(questionSubmit.getUserId());
+            questionSubmitVO.setUserVO(userService.getUserVO(user));
+        }
+        return questionSubmitVO;
+    }
+
+    @Override
+    public Page<QuestionSubmitVO> getQuestionSubmitVOPage(Page<QuestionSubmit> questionSubmitPage, User
+            loginUser) {
         List<QuestionSubmit> questionSubmitList = questionSubmitPage.getRecords();
         Page<QuestionSubmitVO> questionSubmitVOPage = new Page<>(questionSubmitPage.getCurrent(), questionSubmitPage.getSize(), questionSubmitPage.getTotal());
         if (CollectionUtils.isEmpty(questionSubmitList)) {

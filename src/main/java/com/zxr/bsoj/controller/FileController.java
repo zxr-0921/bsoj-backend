@@ -37,7 +37,6 @@ import static com.zxr.bsoj.constant.FileConstant.COS_HOST;
 @RestController
 @RequestMapping("/file")
 @Slf4j
-@Api(tags = "文件模块")
 public class FileController {
 
     @Resource
@@ -55,7 +54,6 @@ public class FileController {
      * @param request
      * @return
      */
-    @ApiOperation(value = "文件上传")
     @PostMapping("/upload")
     public BaseResponse<String> uploadFile(@RequestPart("file") MultipartFile multipartFile,
                                            UploadFileRequest uploadFileRequest, HttpServletRequest request) {

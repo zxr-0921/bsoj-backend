@@ -7,10 +7,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.zxr.bsoj.common.PageRequest;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
-public class AnnouncementQueryRequest extends PageRequest {
+public class AnnouncementQueryRequest extends PageRequest implements Serializable {
+
+    private static final long serialVersionUID = 1L;
     /**
      * 公告类别(system_notice, system_announcement)
      */

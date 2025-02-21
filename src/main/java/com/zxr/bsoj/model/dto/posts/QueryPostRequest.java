@@ -1,22 +1,21 @@
-package com.zxr.bsoj.model.entity;
+package com.zxr.bsoj.model.dto.posts;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.zxr.bsoj.common.PageRequest;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
+import java.util.List;
 
-/**
- * 帖子表，用于存储用户发布的帖子信息
- * @TableName posts
- */
+
 @TableName(value ="posts")
 @Data
-public class Posts implements Serializable {
+public class QueryPostRequest extends PageRequest implements Serializable {
     /**
      * 帖子ID（主键），自增
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -53,7 +52,6 @@ public class Posts implements Serializable {
      * 题解版本（题解专用），可为空
      */
     private String version;
-
     /**
      * 帖子状态，不能为空，默认值为 "draft"。draft,published,archived
      */
@@ -62,27 +60,12 @@ public class Posts implements Serializable {
     /**
      * 发布时间，不能为空，默认值为当前时间
      */
-    private Date publishTime;
 
-    /**
-     * 最后更新时间，不能为空，默认值为当前时间，并在更新时自动更新
-     */
-    private Date updateTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date startTime;
 
-    /**
-     * 浏览量，可为空，默认值为 0
-     */
-    private Integer views;
-
-    /**
-     * 点赞量，可为空，默认值为 0
-     */
-    private Integer likes;
-
-    /**
-     * 评论数量，可为空，默认值为 0
-     */
-    private Integer commentsCount;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date endTime;
 
     /**
      * 帖子类型，不能为空，默认值为 solution_post
@@ -92,14 +75,8 @@ public class Posts implements Serializable {
     /**
      * 标签（JSON格式），可为空
      */
-    private String tags;
+    private List<String> tags;
 
-    /**
-     * 逻辑删除标志(0:未删除,1:已删除)
-     */
-    @TableLogic
-    private Integer isDelete;
 
-    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

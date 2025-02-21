@@ -16,8 +16,6 @@ import com.zxr.bsoj.model.dto.announcement.AnnouncementUpdateRequest;
 import com.zxr.bsoj.model.entity.Announcement;
 import com.zxr.bsoj.model.vo.AnnouncementVO;
 import com.zxr.bsoj.service.AnnouncementService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/announcement")
 @Slf4j
-@Api(tags = "公告模块")
 public class AnnouncementController {
     @Resource
     private AnnouncementService announcementService;
@@ -38,7 +35,6 @@ public class AnnouncementController {
     /**
      * 新建公告
      */
-    @ApiOperation(value = "新建公告")
     @PostMapping("/add")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Announcement> createAnnouncement(@RequestBody AnnouncementAddRequest announcementAddRequest,
@@ -66,12 +62,25 @@ public class AnnouncementController {
     }
 
     /**
+     * 根据id获取公告
+     */
+    @GetMapping("/get/{id}")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Announcement> getAnnouncement(@PathVariable("id") long id) {
+        // 根据id获取公告
+        Announcement announcement = announcementService.getById(id);
+        // 如果公告不存在，返回错误
+        if (announcement == null) {
+            throw new BusinessException(ErrorCode.ANNOUNCEMENT_NOT_EXIST);
+        }
+        return ResultUtils.success(announcement);
+    }
+    /**
      * 发布公告
      */
-    @ApiOperation(value = "发布公告")
-    @PutMapping("/publish/{id}")
+    @PostMapping("/publish")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> publishAnnouncement(@PathVariable("id") long id) {
+    public BaseResponse<Boolean> publishAnnouncement(long id) {
         // 根据id发布公告
         boolean result = announcementService.publishAnnouncement(id);
 
@@ -79,16 +88,15 @@ public class AnnouncementController {
         if (!result) {
             throw new BusinessException(ErrorCode.PUBLISH_ANNOUNCEMENT_ERROR);
         }
-        return ResultUtils.success(result, "发布成功");
+        return ResultUtils.success(true, "发布成功");
     }
 
     /**
      * 撤销公告
      */
-    @ApiOperation(value = "撤销公告")
-    @PutMapping("/revoke/{id}")
+    @PostMapping("/revoke")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> revokeAnnouncement(@PathVariable("id") long id) {
+    public BaseResponse<Boolean> revokeAnnouncement(long id) {
         // 根据id撤销公告
         boolean result = announcementService.revokeAnnouncement(id);
 
@@ -96,13 +104,12 @@ public class AnnouncementController {
         if (!result) {
             throw new BusinessException(ErrorCode.REVOKE_ANNOUNCEMENT_ERROR);
         }
-        return ResultUtils.success(result, "撤销成功");
+        return ResultUtils.success(true, "撤销成功");
     }
 
     /**
      * 删除公告
      */
-    @ApiOperation(value = "删除公告")
     @DeleteMapping("/delete/{id}")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> deleteAnnouncement(@PathVariable("id") long id) {
@@ -121,7 +128,6 @@ public class AnnouncementController {
     /**
      * 获取公告列表
      */
-    @ApiOperation(value = "管理员获取公告列表")
     @PostMapping("/list")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Page<Announcement>> listAnnouncement(@RequestBody AnnouncementQueryRequest announcementQueryRequest, HttpServletRequest request) {
@@ -139,11 +145,11 @@ public class AnnouncementController {
     /**
      * 编辑公告
      */
-    @ApiOperation(value = "编辑公告")
-    @PutMapping("/edit/{id}")
+    @PostMapping("/edit")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Announcement> editAnnouncement(@PathVariable("id") long id, @RequestBody AnnouncementUpdateRequest announcementUpdateRequest, HttpServletRequest request) {
+    public BaseResponse<Announcement> editAnnouncement(@RequestBody AnnouncementUpdateRequest announcementUpdateRequest, HttpServletRequest request) {
         //1. 参数校验
+        Long id = announcementUpdateRequest.getId();
         String category = announcementUpdateRequest.getCategory();
         String title = announcementUpdateRequest.getTitle();
         String content = announcementUpdateRequest.getContent();
@@ -168,7 +174,6 @@ public class AnnouncementController {
     /**
      * 获取公告列表
      */
-    @ApiOperation(value = "用户获取公告列表")
     @PostMapping("/list/user")
     public BaseResponse<Page<AnnouncementVO>> listAnnouncementForUser(@RequestBody AnnouncementQueryRequest announcementQueryRequest, HttpServletRequest request) {
         // 获取分页信息

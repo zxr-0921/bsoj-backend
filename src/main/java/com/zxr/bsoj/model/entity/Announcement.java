@@ -16,7 +16,6 @@ import lombok.Data;
  */
 @TableName(value ="announcement")
 @Data
-@ApiModel(value = "公告表")
 public class Announcement implements Serializable {
     /**
      * 主键ID

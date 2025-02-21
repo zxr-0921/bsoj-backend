@@ -115,3 +115,14 @@ create table notification
     updateTime datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
     isDelete   tinyint  default 0                 not null comment '是否删除'
 ) comment '公告' collate = utf8mb4_unicode_ci;
+
+
+create table post_ai_answer
+(
+    id         bigint auto_increment comment 'id' primary key,
+    postsId    int                                null comment '帖子ID',
+    answer     text                               null comment 'ai的回答',
+    creatTime  datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    updateTime datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    isDelete   int      default 0                 not null comment '是否删除'
+) comment '帖子AI回复';

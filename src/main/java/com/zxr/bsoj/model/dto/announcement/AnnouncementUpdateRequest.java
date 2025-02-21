@@ -2,9 +2,16 @@ package com.zxr.bsoj.model.dto.announcement;
 
 import lombok.Data;
 
-@Data
-public class AnnouncementUpdateRequest {
+import java.io.Serializable;
 
+@Data
+public class AnnouncementUpdateRequest implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 公告ID
+     */
+    private Long id;
     /**
      * 公告类别(system_notice, system_announcement)
      */

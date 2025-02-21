@@ -14,10 +14,11 @@ public enum ErrorCode {
     SYSTEM_ERROR(50000, "系统内部异常"),
     OPERATION_ERROR(50001, "操作失败"),
     API_REQUEST_ERROR(50002, "接口调用失败"),
-    CREATE_ANNOUNCEMENT_ERROR(50003,"创建公告失败"),
+    CREATE_ANNOUNCEMENT_ERROR(50003, "创建公告失败"),
     PUBLISH_ANNOUNCEMENT_ERROR(50004, "发布公告失败"),
     REVOKE_ANNOUNCEMENT_ERROR(50005, "撤销公告失败"),
-    DELETE_ANNOUNCEMENT_ERROR(50006, "删除公告失败");
+    DELETE_ANNOUNCEMENT_ERROR(50006, "删除公告失败"),
+    ANNOUNCEMENT_NOT_EXIST(50007, "公告不存在");
 
     /**
      * 状态码
