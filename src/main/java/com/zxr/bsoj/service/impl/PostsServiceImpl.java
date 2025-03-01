@@ -78,7 +78,7 @@ public class PostsServiceImpl extends ServiceImpl<PostsMapper, Posts>
         String status = queryPostRequest.getStatus();
         Long userId = queryPostRequest.getUserId();
         String content = queryPostRequest.getContent();
-        Integer problemId = queryPostRequest.getProblemId();
+        Long problemId = queryPostRequest.getProblemId();
         String language = queryPostRequest.getLanguage();
         Date startTime = queryPostRequest.getStartTime();
         Date endTime = queryPostRequest.getEndTime();

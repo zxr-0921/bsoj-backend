@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zxr.bsoj.mapper.PostAiAnswerMapper">
+
+    <resultMap id="BaseResultMap" type="com.zxr.bsoj.model.entity.PostAiAnswer">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="postsId" column="postsId" jdbcType="BIGINT"/>
+            <result property="answer" column="answer" jdbcType="VARCHAR"/>
+            <result property="creatTime" column="creatTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,postsId,answer,
+        creatTime,updateTime,isDelete
+    </sql>
+</mapper>

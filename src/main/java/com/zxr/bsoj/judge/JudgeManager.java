@@ -1,10 +1,7 @@
 package com.zxr.bsoj.judge;
 
 import com.zxr.bsoj.judge.codesandbox.model.JudgeInfo;
-import com.zxr.bsoj.judge.strategy.DefaultJudgeStrategy;
-import com.zxr.bsoj.judge.strategy.JavaLanguageJudgeStrategy;
-import com.zxr.bsoj.judge.strategy.JudgeContext;
-import com.zxr.bsoj.judge.strategy.JudgeStrategy;
+import com.zxr.bsoj.judge.strategy.*;
 import com.zxr.bsoj.model.entity.QuestionSubmit;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +22,13 @@ public class JudgeManager {
         QuestionSubmit questionSubmit = judgeContext.getQuestionSubmit();
         String language = questionSubmit.getLanguage();
         JudgeStrategy judgeStrategy = new DefaultJudgeStrategy();
+        // java的判题策略
         if ("java".equals(language)) {
             judgeStrategy = new JavaLanguageJudgeStrategy();
+        }
+        // python
+        if ("python".equals(language)){
+            judgeStrategy= new PythonLanguageJudgeStrategy();
         }
         return judgeStrategy.doJudge(judgeContext);
     }

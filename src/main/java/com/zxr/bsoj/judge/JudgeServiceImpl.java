@@ -94,7 +94,7 @@ public class JudgeServiceImpl implements JudgeService {
         judgeContext.setQuestion(question);
         judgeContext.setQuestionSubmit(questionSubmit);
 
-        // 执行判题策略返回判题结果
+        // 执行判题策略返回判题结果，不同的语言有不同的判题策略
         JudgeInfo judgeInfo = judgeManager.doJudge(judgeContext);
         String message = judgeInfo.getMessage();
         // 更新通过数

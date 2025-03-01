@@ -36,7 +36,7 @@ public class QueryPostRequest extends PageRequest implements Serializable {
     /**
      * 题目ID（外键，可为空）
      */
-    private Integer problemId;
+    private Long problemId;
 
     /**
      * 编程语言（题解专用），可为空

@@ -1,5 +1,6 @@
 package com.zxr.bsoj.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.zxr.bsoj.annotation.AuthCheck;
@@ -27,6 +28,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -251,7 +256,8 @@ public class QuestionController {
      * 分页获取教师创建的题目列表
      */
     @PostMapping("/list/page/teacher")
-    public BaseResponse<Page<Question>> listQuestionByPageTeacher(@RequestBody QuestionQueryRequest questionQueryRequest, HttpServletRequest request) {
+    public BaseResponse<Page<Question>> listQuestionByPageTeacher(@RequestBody QuestionQueryRequest questionQueryRequest,
+                                                                  HttpServletRequest request) {
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
         Page<Question> questionPage = questionService.page(new Page<>(current, size),
@@ -361,4 +367,30 @@ public class QuestionController {
         return ResultUtils.success(questionSubmitService.getQuestionSubmitVO(questionSubmit, loginUser, true));
     }
 
+    /**
+     * 获取所有题目数
+     *
+     */
+    @GetMapping("/question/count")
+    public BaseResponse<Long> getQuestionCount() {
+        // 获取题库中题目总数
+        return ResultUtils.success(questionService.count());
+    }
+
+    /**
+     * 获取当天提交数
+     */
+    @GetMapping("/question_submit/count")
+    public BaseResponse<Long> getQuestionSubmitCount() {
+        // 获取当天日期的开始和结束时间
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+        // 创建查询条件
+        QueryWrapper<QuestionSubmit> queryWrapper = new QueryWrapper<>();
+        queryWrapper.between("createTime", startOfDay, endOfDay);
+        // 查询当天提交数
+        long count = questionSubmitService.count(queryWrapper);
+        return ResultUtils.success(count);
+    }
 }

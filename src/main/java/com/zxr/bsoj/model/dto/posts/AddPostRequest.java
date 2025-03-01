@@ -21,6 +21,7 @@ public class AddPostRequest {
      */
     private String content;
 
+    private Long problemId;
 
     /**
      * 编程语言（题解专用），可为空

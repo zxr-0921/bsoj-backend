@@ -4,15 +4,12 @@ import cn.hutool.core.io.FileUtil;
 import com.zxr.bsoj.common.BaseResponse;
 import com.zxr.bsoj.common.ErrorCode;
 import com.zxr.bsoj.common.ResultUtils;
-import com.zxr.bsoj.constant.FileConstant;
 import com.zxr.bsoj.exception.BusinessException;
 import com.zxr.bsoj.model.dto.file.UploadFileRequest;
 import com.zxr.bsoj.model.entity.User;
 import com.zxr.bsoj.model.enums.FileUploadBizEnum;
 import com.zxr.bsoj.service.UserService;
 import com.zxr.bsoj.utils.file.minio.MinioUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +69,32 @@ public class FileController {
         try (InputStream inputStream = multipartFile.getInputStream()) {
             minioUtils.uploadObject(inputStream, filepath, multipartFile.getContentType());
 
+            // 返回可访问地址
+            return ResultUtils.success(COS_HOST + BUCKET_NAME + filepath);
+        } catch (Exception e) {
+            log.error("file upload error, filepath = " + filepath, e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
+        }
+    }
+
+    /**
+     * 头像上传
+     */
+    @PostMapping("/upload/avatar")
+    public BaseResponse<String> uploadAvatar(@RequestPart("file") MultipartFile multipartFile, HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        if (loginUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+
+        // 校验
+        validFile(multipartFile, FileUploadBizEnum.USER_AVATAR);
+        // 文件目录：根据业务、用户来划分
+        String uuid = RandomStringUtils.randomAlphanumeric(8);
+        String filename = uuid + "-" + multipartFile.getOriginalFilename();
+        String filepath = String.format("/%s/%s/%s", FileUploadBizEnum.USER_AVATAR.getValue(), loginUser.getId(),filename);
+        try (InputStream inputStream = multipartFile.getInputStream()) {
+            minioUtils.uploadObject(inputStream, filepath, multipartFile.getContentType());
             // 返回可访问地址
             return ResultUtils.success(COS_HOST + BUCKET_NAME + filepath);
         } catch (Exception e) {
